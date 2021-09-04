@@ -38,7 +38,7 @@ namespace Test
             Assert.AreEqual<bool>(expected, actual);   
         }
         [TestMethod]
-        public void AddStock_Milk_21()
+        public void ProcessDrink_Cappuccino_Test_PositiveScenario()
         {
             _stockProcess = new StockProcess(eventing, logger, configValues, new StockBookContext());
             _stockProcess.AddStock(new CoffeeBean
