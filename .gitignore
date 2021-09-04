@@ -50,3 +50,5 @@ Thumbs.db
 /InQba.Libs/bin/Debug
 /Test/bin/Debug
 /Inq.Coffeemachine/bin/Debug
+/Inq.Coffeemachine/obj/Release
+/InQba.Libs/obj/Release

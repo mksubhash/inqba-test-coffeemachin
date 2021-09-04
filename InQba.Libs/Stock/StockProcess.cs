@@ -8,14 +8,14 @@ namespace InQba.Libs
 {
     public class StockProcess : IStockProcess
     {
-        private readonly StockBookContext _stockBook; // this is supposded to be dbContext. Here added as an object. 
+        private readonly StockBookContext _stockContext; // this is supposded to be dbContext. Here added as an object. 
         private readonly ConstantConfigValues _config;
         private readonly IMachineEventing _eventing;
         private readonly ILogger _logger;
-        public StockProcess(IMachineEventing eventing,ILogger logger, ConstantConfigValues config, StockBookContext stockBook) // injecting dependency dbContext and IOption (config)  in real world applications
+        public StockProcess(IMachineEventing eventing,ILogger logger, ConstantConfigValues config, StockBookContext stockContext) // injecting dependency dbContext and IOption (config)  in real world applications
         {
             _logger = logger;
-            _stockBook = stockBook;
+            _stockContext = stockContext;
             _config = config;
             _eventing = eventing;
         }
@@ -26,12 +26,16 @@ namespace InQba.Libs
 
         public List<Product> GetStock()
         {
-            return _stockBook.Products;
+            return _stockContext.Products;
         }
 
         public Product IsStockAvailble(int productId)
         {
-            var productIn = _stockBook.Products.Find(x => x.Id == productId);
+            var productIn = _stockContext.Products.Find(x => x.Id == productId);
+            if(productIn ==null)
+            {
+                return null;
+            }
             if (productIn.Qty <= 5)
             {
                 _eventing.OnWarningHappened(new CustomEventArgs(productIn));
@@ -56,7 +60,7 @@ namespace InQba.Libs
         private bool AddOrUpdateStock(Product product)
         {
             int currentStock = 0;
-            var productIn = _stockBook.Products.Find(x => x.Id == product.Id);
+            var productIn = _stockContext.Products.Find(x => x.Id == product.Id);
             if (productIn != null)
             {
                 currentStock = productIn.Qty;
@@ -65,9 +69,9 @@ namespace InQba.Libs
             var newStock = product.Qty + currentStock;
             if (max.Value >= newStock)
             {
-                _stockBook.Products.Remove(productIn);
+                _stockContext.Products.Remove(productIn);
                 product.Qty = newStock;
-                _stockBook.Products.Add(product);
+                _stockContext.Products.Add(product);
 
             }
             else

@@ -9,6 +9,6 @@ namespace InQba.Libs
     public interface IDrinkProcessor
     {
         bool OrderDrink(Drink drink);
-        void DispenseDrink(Drink drink);
+        bool DispenseDrink(Drink drink);
     }
 }

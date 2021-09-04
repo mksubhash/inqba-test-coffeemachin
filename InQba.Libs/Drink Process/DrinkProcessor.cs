@@ -18,8 +18,7 @@ namespace InQba.Libs
             _logger = logger;
             _eventing = eventing;
         }
-
-        public void DispenseDrink(Drink drink)
+        public bool DispenseDrink(Drink drink)
         {
             _logger.PublishLogging("Dispensing the drink........");
             _logger.PublishLogging("Updating Stock........");
@@ -27,20 +26,30 @@ namespace InQba.Libs
             drink.BeanUnit.Qty = drink.BeanUnit.Qty * -1;            
             _stockProcess.UdateStock(drink.BeanUnit);
             drink.MilkUnit.Qty = drink.MilkUnit.Qty * -1;
-            _stockProcess.UdateStock(drink.MilkUnit);
+            var isUpdated = _stockProcess.UdateStock(drink.MilkUnit);
+            if(isUpdated !=true)
+            {
+                _logger.PublishLogging("Error.. Stock update failed..");
+            }            
             _stockProcess.IsStockAvailble(drink.BeanUnit.Id);
-            _stockProcess.PrintStock();            
+            _stockProcess.PrintStock();
+            return true;
         }
 
         public bool OrderDrink(Drink drink)
         {
             var beanAvailble = _stockProcess.IsStockAvailble(drink.BeanUnit.Id);
             var milkAvailble = _stockProcess.IsStockAvailble(drink.MilkUnit.Id);
-            if (beanAvailble.Qty >= drink.BeanUnit.Qty && milkAvailble.Qty >= drink.MilkUnit.Qty)
+            if(beanAvailble ==null || milkAvailble ==null)
+            {
+                _eventing.OnStockIsLess(new CustomEventArgs(drink.BeanUnit));
+                _eventing.OnStockIsLess(new CustomEventArgs(drink.MilkUnit));
+            }
+            else if (beanAvailble.Qty >= drink.BeanUnit.Qty && milkAvailble.Qty >= drink.MilkUnit.Qty)
             {
                 //Make the drink
                 return true;
-            }
+            }            
             else
             {
                 _stockProcess.PrintStock();
@@ -53,9 +62,9 @@ namespace InQba.Libs
                 {
                     _eventing.OnStockIsLess(new CustomEventArgs(milkAvailble));
                 }
-                return false;
+                //return false;
             }
-
+            return false;
         }
     }
 }
